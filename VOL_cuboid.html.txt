@@ -1,0 +1,794 @@
+
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Volumen von Quadern und Würfeln</title>
+  <style>
+    :root {
+      --slate-50: #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-300: #cbd5e1;
+      --slate-500: #64748b;
+      --slate-600: #475569;
+      --slate-700: #334155;
+      --slate-800: #1e293b;
+      --slate-900: #0f172a;
+      --slate-950: #020617;
+      --blue-fill: #38bdf8;
+      --blue-stroke: #0284c7;
+      --red-fill: #ef4444;
+      --red-stroke: #7f1d1d;
+      --orange-fill: #f97316;
+      --orange-stroke: #7c2d12;
+      --yellow-fill: #facc15;
+      --yellow-stroke: #713f12;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--slate-950);
+      background: var(--slate-950);
+    }
+
+    main {
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 10px;
+      overflow: hidden;
+    }
+
+    .top-panel {
+      flex: 0 0 auto;
+      max-height: 33vh;
+      border: 1px solid var(--slate-800);
+      border-radius: 18px;
+      background: white;
+      padding: 8px;
+      box-shadow: 0 1px 2px rgb(15 23 42 / 0.08);
+      overflow: visible;
+    }
+
+    h1 {
+      margin: 0 0 6px 0;
+      color: var(--slate-900);
+      font-size: 18px;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+
+    .toolbox {
+      display: grid;
+      grid-template-columns: minmax(280px, 0.8fr) minmax(520px, 1.4fr);
+      gap: 6px;
+      border: 1px solid var(--slate-200);
+      border-radius: 14px;
+      background: var(--slate-50);
+      padding: 6px;
+      box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
+    }
+
+    .tool-section {
+      border: 1px solid var(--slate-200);
+      border-radius: 10px;
+      background: rgb(255 255 255 / 0.7);
+      padding: 6px;
+    }
+
+    .tool-section-title {
+      margin-bottom: 4px;
+      color: var(--slate-600);
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .dimension-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .dimension-control {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      border: 1px solid var(--slate-200);
+      border-radius: 6px;
+      background: white;
+      padding: 4px 6px;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .dimension-control.active,
+    .dimension-control:focus {
+      border-color: var(--slate-900);
+    }
+
+    .dimension-label {
+      min-width: 42px;
+      color: var(--slate-700);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .dimension-value {
+      min-width: 18px;
+      text-align: center;
+      color: var(--slate-900);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.4;
+    }
+
+    .small-button {
+      width: 20px;
+      height: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--slate-300);
+      border-radius: 4px;
+      background: var(--slate-50);
+      color: var(--slate-700);
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .small-button:hover:not(:disabled) {
+      background: var(--slate-100);
+    }
+
+    .fill-controls {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .fill-control {
+      border: 1px solid var(--slate-200);
+      border-radius: 8px;
+      background: white;
+      padding: 4px 6px;
+      box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
+    }
+
+    .fill-control-inner {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .icon-wrap {
+      width: 40px;
+      height: 32px;
+      display: flex;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      background: var(--slate-100);
+    }
+
+    .fill-title {
+      min-width: 0;
+      flex: 1;
+      color: var(--slate-800);
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .fill-buttons {
+      display: flex;
+      flex-shrink: 0;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .scene-panel {
+      min-height: 0;
+      flex: 1;
+      border: 1px solid var(--slate-800);
+      border-radius: 18px;
+      background: white;
+      padding: 10px;
+      box-shadow: 0 1px 2px rgb(15 23 42 / 0.08);
+      overflow: hidden;
+    }
+
+    .scene-wrap {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid var(--slate-200);
+      border-radius: 18px;
+      background: linear-gradient(135deg, white, var(--slate-100));
+      box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
+    }
+
+    .scene-hint {
+      position: absolute;
+      z-index: 10;
+      left: 12px;
+      top: 12px;
+      border: 1px solid var(--slate-200);
+      border-radius: 12px;
+      background: rgb(255 255 255 / 0.85);
+      padding: 8px 12px;
+      color: var(--slate-500);
+      font-size: 12px;
+      box-shadow: 0 1px 2px rgb(15 23 42 / 0.08);
+      backdrop-filter: blur(8px);
+    }
+
+    .scene-hint strong {
+      display: block;
+      color: var(--slate-800);
+      font-weight: 800;
+    }
+
+    #sceneSvg {
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+    }
+
+    #sceneSvg:active {
+      cursor: grabbing;
+    }
+
+    .axis-label {
+      fill: var(--slate-700);
+      font-size: 14px;
+      font-weight: 700;
+      user-select: none;
+    }
+
+    @media (max-width: 900px) {
+      .toolbox {
+        grid-template-columns: 1fr;
+      }
+
+      .fill-controls {
+        grid-template-columns: 1fr;
+      }
+
+      .top-panel {
+        max-height: 45vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="top-panel">
+      <h1>Volumen von Quadern und Würfeln</h1>
+
+      <div class="toolbox">
+        <section class="tool-section">
+          <div class="tool-section-title">Maße Quader</div>
+          <div class="dimension-controls">
+            <div class="dimension-control active" data-dimension="length" tabindex="0" role="group" aria-label="Länge einstellen">
+              <span class="dimension-label">Länge</span>
+              <button class="small-button" type="button" data-action="dimension-minus" data-dimension="length" aria-label="Länge verringern">−</button>
+              <span class="dimension-value" id="lengthValue">4</span>
+              <button class="small-button" type="button" data-action="dimension-plus" data-dimension="length" aria-label="Länge erhöhen">+</button>
+            </div>
+
+            <div class="dimension-control" data-dimension="width" tabindex="0" role="group" aria-label="Breite einstellen">
+              <span class="dimension-label">Breite</span>
+              <button class="small-button" type="button" data-action="dimension-minus" data-dimension="width" aria-label="Breite verringern">−</button>
+              <span class="dimension-value" id="widthValue">3</span>
+              <button class="small-button" type="button" data-action="dimension-plus" data-dimension="width" aria-label="Breite erhöhen">+</button>
+            </div>
+
+            <div class="dimension-control" data-dimension="height" tabindex="0" role="group" aria-label="Höhe einstellen">
+              <span class="dimension-label">Höhe</span>
+              <button class="small-button" type="button" data-action="dimension-minus" data-dimension="height" aria-label="Höhe verringern">−</button>
+              <span class="dimension-value" id="heightValue">2</span>
+              <button class="small-button" type="button" data-action="dimension-plus" data-dimension="height" aria-label="Höhe erhöhen">+</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="tool-section">
+          <div class="tool-section-title">Quader füllen</div>
+          <div class="fill-controls">
+            <div class="fill-control">
+              <div class="fill-control-inner">
+                <div class="icon-wrap" id="singleIcon"></div>
+                <div class="fill-title">Einzelwürfel</div>
+                <div class="fill-buttons">
+                  <button class="small-button" id="singleMinus" type="button" aria-label="Einzelwürfel verringern">−</button>
+                  <button class="small-button" id="singlePlus" type="button" aria-label="Einzelwürfel erhöhen">+</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="fill-control">
+              <div class="fill-control-inner">
+                <div class="icon-wrap" id="rowIcon"></div>
+                <div class="fill-title">Reihe</div>
+                <div class="fill-buttons">
+                  <button class="small-button" id="rowMinus" type="button" aria-label="Reihe verringern">−</button>
+                  <button class="small-button" id="rowPlus" type="button" aria-label="Reihe erhöhen">+</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="fill-control">
+              <div class="fill-control-inner">
+                <div class="icon-wrap" id="layerIcon"></div>
+                <div class="fill-title">Schicht</div>
+                <div class="fill-buttons">
+                  <button class="small-button" id="layerMinus" type="button" aria-label="Schicht verringern">−</button>
+                  <button class="small-button" id="layerPlus" type="button" aria-label="Schicht erhöhen">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="scene-panel">
+      <div class="scene-wrap">
+        <div class="scene-hint">
+          <strong>3D-Ansicht</strong>
+          Mit der Maus ziehen, um zu rotieren.
+        </div>
+        <svg id="sceneSvg" viewBox="0 0 940 700" role="img" aria-label="Rotierbares dreidimensionales Koordinatensystem mit transparentem Quader und Einheitswürfeln"></svg>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const MIN_DIMENSION = 1;
+    const MAX_DIMENSION = 10;
+
+    const FACE_DEFS = [
+      { id: "bottom", names: ["O", "A", "B", "C"] },
+      { id: "back", names: ["C", "B", "F", "G"] },
+      { id: "right", names: ["A", "B", "F", "E"] },
+      { id: "left", names: ["O", "C", "G", "D"] },
+      { id: "front", names: ["O", "A", "E", "D"] },
+      { id: "top", names: ["D", "E", "F", "G"] },
+    ];
+
+    const EDGE_DEFS = [
+      ["O", "A"], ["A", "B"], ["B", "C"], ["C", "O"],
+      ["D", "E"], ["E", "F"], ["F", "G"], ["G", "D"],
+      ["O", "D"], ["A", "E"], ["B", "F"], ["C", "G"],
+    ];
+
+    const iconColors = {
+      single: { top: "#fca5a5", left: "#ef4444", right: "#dc2626", stroke: "#7f1d1d" },
+      row: { top: "#fdba74", left: "#f97316", right: "#ea580c", stroke: "#7c2d12" },
+      layer: { top: "#fde68a", left: "#facc15", right: "#eab308", stroke: "#713f12" },
+    };
+
+    const cubeColors = {
+      single: { fill: "#ef4444", stroke: "#7f1d1d" },
+      row: { fill: "#f97316", stroke: "#7c2d12" },
+      layer: { fill: "#facc15", stroke: "#713f12" },
+    };
+
+    const state = {
+      dimensions: { length: 4, width: 3, height: 2 },
+      activeMeasure: "length",
+      construction: { unitsPerRow: 0, rows: 0, layers: 0 },
+      rotation: { yaw: -0.72, pitch: -0.48 },
+      drag: null,
+    };
+
+    const sceneSvg = document.getElementById("sceneSvg");
+
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function rotatePoint(point, rotation) {
+      const cosY = Math.cos(rotation.yaw);
+      const sinY = Math.sin(rotation.yaw);
+      const cosX = Math.cos(rotation.pitch);
+      const sinX = Math.sin(rotation.pitch);
+
+      const x1 = point.x * cosY - point.y * sinY;
+      const y1 = point.x * sinY + point.y * cosY;
+      const z1 = point.z;
+      const y2 = y1 * cosX - z1 * sinX;
+      const z2 = y1 * sinX + z1 * cosX;
+
+      return { x: x1, y: y2, z: z2 };
+    }
+
+    function projectPoint(point, rotation, scale, center) {
+      const rotated = rotatePoint(point, rotation);
+      const perspective = 900 / (900 - rotated.z * scale * 0.45);
+
+      return {
+        x: center.x + rotated.x * scale * perspective,
+        y: center.y - rotated.y * scale * perspective,
+        depth: rotated.z,
+      };
+    }
+
+    function buildCuboidGeometry(bounds, rotation, scale, center) {
+      const { x0, y0, z0, x1, y1, z1 } = bounds;
+
+      const vertices = {
+        O: { x: x0, y: y0, z: z0 },
+        A: { x: x1, y: y0, z: z0 },
+        B: { x: x1, y: y1, z: z0 },
+        C: { x: x0, y: y1, z: z0 },
+        D: { x: x0, y: y0, z: z1 },
+        E: { x: x1, y: y0, z: z1 },
+        F: { x: x1, y: y1, z: z1 },
+        G: { x: x0, y: y1, z: z1 },
+      };
+
+      const faces = FACE_DEFS.map((face) => {
+        const projected = face.names.map((name) => projectPoint(vertices[name], rotation, scale, center));
+        const avgDepth = projected.reduce((sum, point) => sum + point.depth, 0) / projected.length;
+        return { ...face, projected, avgDepth };
+      });
+
+      const edges = EDGE_DEFS.map(([from, to]) => ({
+        from: projectPoint(vertices[from], rotation, scale, center),
+        to: projectPoint(vertices[to], rotation, scale, center),
+      }));
+
+      return { faces, edges };
+    }
+
+    function polygonPoints(points) {
+      return points.map((point) => `${point.x},${point.y}`).join(" ");
+    }
+
+    function isoIconPoint(point, scale, origin) {
+      return {
+        x: origin.x + (point.x - point.y) * scale,
+        y: origin.y + (point.x + point.y) * scale * 0.48 - point.z * scale * 0.92,
+      };
+    }
+
+    function isoIconCubeMarkup({ x = 0, y = 0, z = 0, scale = 9, origin = { x: 20, y: 24 }, colors = iconColors.single }) {
+      const vertices = {
+        O: isoIconPoint({ x, y, z }, scale, origin),
+        A: isoIconPoint({ x: x + 1, y, z }, scale, origin),
+        B: isoIconPoint({ x: x + 1, y: y + 1, z }, scale, origin),
+        C: isoIconPoint({ x, y: y + 1, z }, scale, origin),
+        D: isoIconPoint({ x, y, z: z + 1 }, scale, origin),
+        E: isoIconPoint({ x: x + 1, y, z: z + 1 }, scale, origin),
+        F: isoIconPoint({ x: x + 1, y: y + 1, z: z + 1 }, scale, origin),
+        G: isoIconPoint({ x, y: y + 1, z: z + 1 }, scale, origin),
+      };
+
+      return `
+        <g>
+          <polygon points="${polygonPoints([vertices.O, vertices.A, vertices.E, vertices.D])}" fill="${colors.left}" stroke="${colors.stroke}" stroke-width="0.7" stroke-linejoin="round"></polygon>
+          <polygon points="${polygonPoints([vertices.A, vertices.B, vertices.F, vertices.E])}" fill="${colors.right}" stroke="${colors.stroke}" stroke-width="0.7" stroke-linejoin="round"></polygon>
+          <polygon points="${polygonPoints([vertices.D, vertices.E, vertices.F, vertices.G])}" fill="${colors.top}" stroke="${colors.stroke}" stroke-width="0.7" stroke-linejoin="round"></polygon>
+        </g>
+      `;
+    }
+
+    function renderIcons() {
+      document.getElementById("singleIcon").innerHTML = `
+        <svg viewBox="0 0 42 38" width="28" height="24" aria-hidden="true">
+          ${isoIconCubeMarkup({ x: 0, y: 0, z: 0, scale: 10, origin: { x: 21, y: 27 }, colors: iconColors.single })}
+        </svg>
+      `;
+
+      document.getElementById("rowIcon").innerHTML = `
+        <svg viewBox="0 0 62 38" width="40" height="24" aria-hidden="true">
+          ${[0, 1, 2].map((x) => isoIconCubeMarkup({ x, y: 0, z: 0, scale: 8, origin: { x: 18, y: 25 }, colors: iconColors.row })).join("")}
+        </svg>
+      `;
+
+      const layerCubes = [];
+      for (let y = 0; y < 3; y += 1) {
+        for (let x = 0; x < 3; x += 1) layerCubes.push({ x, y, z: 0 });
+      }
+
+      document.getElementById("layerIcon").innerHTML = `
+        <svg viewBox="0 0 62 50" width="40" height="28" aria-hidden="true">
+          ${layerCubes
+            .sort((a, b) => a.x + a.y - (b.x + b.y))
+            .map((cube) => isoIconCubeMarkup({ ...cube, scale: 6.4, origin: { x: 31, y: 26 }, colors: iconColors.layer }))
+            .join("")}
+        </svg>
+      `;
+    }
+
+    function updateDimension(key, delta) {
+      state.dimensions[key] = clamp(state.dimensions[key] + delta, MIN_DIMENSION, MAX_DIMENSION);
+      state.activeMeasure = key;
+      clampConstructionToDimensions();
+      renderAll();
+    }
+
+    function clampConstructionToDimensions() {
+      state.construction.unitsPerRow = clamp(state.construction.unitsPerRow, 0, state.dimensions.length);
+      state.construction.rows = clamp(state.construction.rows, 0, state.dimensions.width);
+      state.construction.layers = clamp(state.construction.layers, 0, state.dimensions.height);
+    }
+
+    function addSingleCube() {
+      const unitsPerRow = clamp(state.construction.unitsPerRow + 1, 0, state.dimensions.length);
+      state.construction.unitsPerRow = unitsPerRow;
+      state.construction.rows = unitsPerRow > 0 ? clamp(Math.max(1, state.construction.rows), 1, state.dimensions.width) : 0;
+      state.construction.layers = unitsPerRow > 0 ? clamp(Math.max(1, state.construction.layers), 1, state.dimensions.height) : 0;
+      renderAll();
+    }
+
+    function removeSingleCube() {
+      const unitsPerRow = clamp(state.construction.unitsPerRow - 1, 0, state.dimensions.length);
+      if (unitsPerRow === 0) {
+        state.construction = { unitsPerRow: 0, rows: 0, layers: 0 };
+      } else {
+        state.construction.unitsPerRow = unitsPerRow;
+        state.construction.rows = clamp(Math.max(1, state.construction.rows), 1, state.dimensions.width);
+        state.construction.layers = clamp(Math.max(1, state.construction.layers), 1, state.dimensions.height);
+      }
+      renderAll();
+    }
+
+    function addRow() {
+      if (state.construction.unitsPerRow === 0) {
+        state.construction = { unitsPerRow: 1, rows: 1, layers: 1 };
+      } else {
+        state.construction.rows = clamp(Math.max(1, state.construction.rows) + 1, 1, state.dimensions.width);
+        state.construction.layers = clamp(Math.max(1, state.construction.layers), 1, state.dimensions.height);
+      }
+      renderAll();
+    }
+
+    function removeRow() {
+      if (state.construction.unitsPerRow === 0) return;
+      state.construction.rows = clamp(state.construction.rows - 1, 1, state.dimensions.width);
+      state.construction.layers = clamp(Math.max(1, state.construction.layers), 1, state.dimensions.height);
+      renderAll();
+    }
+
+    function addLayer() {
+      if (state.construction.unitsPerRow === 0) {
+        state.construction = { unitsPerRow: 1, rows: 1, layers: 1 };
+      } else {
+        state.construction.rows = clamp(Math.max(1, state.construction.rows), 1, state.dimensions.width);
+        state.construction.layers = clamp(Math.max(1, state.construction.layers) + 1, 1, state.dimensions.height);
+      }
+      renderAll();
+    }
+
+    function removeLayer() {
+      if (state.construction.unitsPerRow === 0) return;
+      state.construction.rows = clamp(Math.max(1, state.construction.rows), 1, state.dimensions.width);
+      state.construction.layers = clamp(state.construction.layers - 1, 1, state.dimensions.height);
+      renderAll();
+    }
+
+    function renderControls() {
+      const { length, width, height } = state.dimensions;
+      document.getElementById("lengthValue").textContent = length;
+      document.getElementById("widthValue").textContent = width;
+      document.getElementById("heightValue").textContent = height;
+
+      document.querySelectorAll(".dimension-control").forEach((control) => {
+        control.classList.toggle("active", control.dataset.dimension === state.activeMeasure);
+      });
+
+      document.getElementById("singleMinus").disabled = state.construction.unitsPerRow <= 0;
+      document.getElementById("singlePlus").disabled = state.construction.unitsPerRow >= length;
+      document.getElementById("rowMinus").disabled = state.construction.unitsPerRow === 0 || state.construction.rows <= 1;
+      document.getElementById("rowPlus").disabled = state.construction.unitsPerRow > 0 && state.construction.rows >= width;
+      document.getElementById("layerMinus").disabled = state.construction.unitsPerRow === 0 || state.construction.layers <= 1;
+      document.getElementById("layerPlus").disabled = state.construction.unitsPerRow > 0 && state.construction.layers >= height;
+    }
+
+    function renderScene() {
+      const { length, width, height } = state.dimensions;
+      const maxDimension = Math.max(length, width, height, 6);
+      const scale = 360 / (maxDimension + 7);
+      const center = { x: 470, y: 350 };
+      const axisLength = Math.max(10, maxDimension + 2);
+      const p = (x, y, z) => projectPoint({ x, y, z }, state.rotation, scale, center);
+
+      const outer = buildCuboidGeometry(
+        { x0: 0, y0: 0, z0: 0, x1: length, y1: width, z1: height },
+        state.rotation,
+        scale,
+        center
+      );
+
+      const unitCubeFaces = [];
+      const unitCubeEdges = [];
+
+      for (let z = 0; z < state.construction.layers; z += 1) {
+        for (let y = 0; y < state.construction.rows; y += 1) {
+          for (let x = 0; x < state.construction.unitsPerRow; x += 1) {
+            const cube = buildCuboidGeometry(
+              { x0: x, y0: y, z0: z, x1: x + 1, y1: y + 1, z1: z + 1 },
+              state.rotation,
+              scale,
+              center
+            );
+
+            const cubeType = z > 0 ? "layer" : y > 0 ? "row" : "single";
+            cube.faces.forEach((face) => unitCubeFaces.push({ ...face, cubeType }));
+            cube.edges.forEach((edge) => unitCubeEdges.push({ ...edge, cubeType }));
+          }
+        }
+      }
+
+      const axes = [
+        { id: "x", label: "x / Länge", start: p(0, 0, 0), end: p(axisLength, 0, 0) },
+        { id: "y", label: "y / Breite", start: p(0, 0, 0), end: p(0, axisLength, 0) },
+        { id: "z", label: "z / Höhe", start: p(0, 0, 0), end: p(0, 0, axisLength) },
+      ];
+
+      const gridLines = [];
+      for (let i = 0; i <= axisLength; i += 1) {
+        gridLines.push({ start: p(i, 0, 0), end: p(i, axisLength, 0), major: i % 5 === 0 });
+        gridLines.push({ start: p(0, i, 0), end: p(axisLength, i, 0), major: i % 5 === 0 });
+      }
+
+      const gridMarkup = gridLines.map((line) => `
+        <line x1="${line.start.x}" y1="${line.start.y}" x2="${line.end.x}" y2="${line.end.y}" stroke="${line.major ? "#cbd5e1" : "#e2e8f0"}" stroke-width="${line.major ? 1.2 : 0.7}"></line>
+      `).join("");
+
+      const axesMarkup = axes.map((axis) => `
+        <g>
+          <line x1="${axis.start.x}" y1="${axis.start.y}" x2="${axis.end.x}" y2="${axis.end.y}" stroke="#0f172a" stroke-width="2.5" marker-end="url(#arrow)"></line>
+          <text x="${axis.end.x + 9}" y="${axis.end.y - 9}" class="axis-label">${axis.label}</text>
+        </g>
+      `).join("");
+
+      const outerFacesMarkup = [...outer.faces]
+        .sort((a, b) => a.avgDepth - b.avgDepth)
+        .map((face) => `
+          <polygon points="${polygonPoints(face.projected)}" fill="#38bdf8" fill-opacity="0.12" stroke="#0284c7" stroke-opacity="0.35" stroke-width="1"></polygon>
+        `)
+        .join("");
+
+      const cubeFacesMarkup = [...unitCubeFaces]
+        .sort((a, b) => a.avgDepth - b.avgDepth)
+        .map((face) => {
+          const colors = cubeColors[face.cubeType];
+          return `<polygon points="${polygonPoints(face.projected)}" fill="${colors.fill}" fill-opacity="1" stroke="${colors.stroke}" stroke-opacity="1" stroke-width="0.9"></polygon>`;
+        })
+        .join("");
+
+      const cubeEdgesMarkup = unitCubeEdges
+        .map((edge) => {
+          const colors = cubeColors[edge.cubeType];
+          return `<line x1="${edge.from.x}" y1="${edge.from.y}" x2="${edge.to.x}" y2="${edge.to.y}" stroke="${colors.stroke}" stroke-opacity="1" stroke-width="1.1" stroke-linecap="round"></line>`;
+        })
+        .join("");
+
+      const outerEdgesMarkup = outer.edges.map((edge) => `
+        <line x1="${edge.from.x}" y1="${edge.from.y}" x2="${edge.to.x}" y2="${edge.to.y}" stroke="#075985" stroke-width="3" stroke-linecap="round"></line>
+      `).join("");
+
+      sceneSvg.innerHTML = `
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L6,3 z" fill="currentColor"></path>
+          </marker>
+        </defs>
+        <g opacity="0.75">${gridMarkup}</g>
+        <g>${axesMarkup}</g>
+        <g>${outerFacesMarkup}</g>
+        <g>${cubeFacesMarkup}</g>
+        <g>${cubeEdgesMarkup}</g>
+        <g>${outerEdgesMarkup}</g>
+      `;
+    }
+
+    function renderAll() {
+      renderControls();
+      renderScene();
+    }
+
+    document.querySelectorAll("[data-action='dimension-minus']").forEach((button) => {
+      button.addEventListener("click", (event) => updateDimension(event.currentTarget.dataset.dimension, -1));
+    });
+
+    document.querySelectorAll("[data-action='dimension-plus']").forEach((button) => {
+      button.addEventListener("click", (event) => updateDimension(event.currentTarget.dataset.dimension, 1));
+    });
+
+    document.querySelectorAll(".dimension-control").forEach((control) => {
+      control.addEventListener("focus", () => {
+        state.activeMeasure = control.dataset.dimension;
+        renderControls();
+      });
+
+      control.addEventListener("click", () => {
+        state.activeMeasure = control.dataset.dimension;
+        renderControls();
+      });
+
+      control.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowUp" || event.key === "ArrowRight") {
+          event.preventDefault();
+          updateDimension(control.dataset.dimension, 1);
+        }
+        if (event.key === "ArrowDown" || event.key === "ArrowLeft") {
+          event.preventDefault();
+          updateDimension(control.dataset.dimension, -1);
+        }
+      });
+    });
+
+    document.getElementById("singleMinus").addEventListener("click", removeSingleCube);
+    document.getElementById("singlePlus").addEventListener("click", addSingleCube);
+    document.getElementById("rowMinus").addEventListener("click", removeRow);
+    document.getElementById("rowPlus").addEventListener("click", addRow);
+    document.getElementById("layerMinus").addEventListener("click", removeLayer);
+    document.getElementById("layerPlus").addEventListener("click", addLayer);
+
+    sceneSvg.addEventListener("pointerdown", (event) => {
+      sceneSvg.setPointerCapture(event.pointerId);
+      state.drag = {
+        x: event.clientX,
+        y: event.clientY,
+        yaw: state.rotation.yaw,
+        pitch: state.rotation.pitch,
+      };
+    });
+
+    sceneSvg.addEventListener("pointermove", (event) => {
+      if (!state.drag) return;
+      const dx = event.clientX - state.drag.x;
+      const dy = event.clientY - state.drag.y;
+      state.rotation = {
+        yaw: state.drag.yaw + dx * 0.01,
+        pitch: clamp(state.drag.pitch + dy * 0.01, -1.35, 1.15),
+      };
+      renderScene();
+    });
+
+    sceneSvg.addEventListener("pointerup", () => {
+      state.drag = null;
+    });
+
+    sceneSvg.addEventListener("pointercancel", () => {
+      state.drag = null;
+    });
+
+    renderIcons();
+    renderAll();
+  </script>
+</body>
+</html>
